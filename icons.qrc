@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>icons/openCon.png</file>
+        <file>icons/closeCon.png</file>
+        <file>icons/new-user.png</file>
+        <file>icons/users-group.png</file>
+        <file>icons/log.png</file>
+        <file>icons/clearlog.png</file>
+        <file>icons/configure.png</file>
+        <file>icons/servericon.png</file>
+    </qresource>
+</RCC>
