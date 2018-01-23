@@ -5,7 +5,6 @@
 #include <QTcpSocket>
 
 #include "server.h"
-#include "connectionthread.h"
 
 
 namespace Ui {

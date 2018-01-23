@@ -5,7 +5,7 @@
 #include <QDebug>
 #include <QThreadPool>
 #include <QTimer>
-#include "connectionthread.h"
+#include <vector>
 
 #include "client.h"
 
@@ -31,7 +31,7 @@ public slots:
 protected:
     void incomingConnection(qintptr socketDescriptor);
 private:
-    QThreadPool *threadPool;
+    std::vector <Client*> clients;
 
 };
 

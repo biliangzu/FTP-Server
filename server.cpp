@@ -1,14 +1,15 @@
 #include "server.h"
 
 Server::Server(QObject *parent) : QTcpServer(parent){
-    threadPool = new QThreadPool(this);
+
 
     //TODO Max.amount of connections.
     //threadPool->setMaxThreadCount(connectionAmount);
 }
 
 Server::~Server(){
-    delete threadPool;
+    qDebug() << "~Server";
+
 }
 
 void Server::startServer(){
@@ -22,11 +23,17 @@ void Server::startServer(){
 void Server::stopServer(){
     this->close();
     emit kickAll();
+
+    for (std::vector<Client*>::iterator it = clients.begin() ; it != clients.end(); ++it){
+         delete (*it);
+       }
+    clients.clear();
 }
 
 void Server::incomingConnection(qintptr socketDescriptor){
 
       Client *client = new Client(this);
+      clients.push_back(client);
 
 
       connect(client, SIGNAL(message(QString)), this, SLOT(message(QString)));
