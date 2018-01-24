@@ -9,7 +9,6 @@ void Client::setSocket(qintptr descriptor){
     this->descriptor = descriptor;
     socket = new QTcpSocket();
 
-
     connect(socket, SIGNAL(connected()), this, SLOT(connected()));
     connect(socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
     connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
@@ -18,10 +17,6 @@ void Client::setSocket(qintptr descriptor){
 
     emit message( "Client connected at " + QString::number(descriptor));
     emit info(QString::number(descriptor), socket->peerAddress().toString());
-
-
-
-
 }
 
 void Client::readyRead(){
@@ -37,11 +32,13 @@ void Client::readyRead(){
 }
 
 void Client::connected(){
-    emit message("Client connected");
+    emit message("Client " + QString::number(socket->socketDescriptor()) + " connected");
 }
 
 void Client::disconnected(){
-    emit message("Client disconnected");
+    emit message("Client " + QString::number(this->descriptor) +" disconnected");
+    emit removeFromTable(this->descriptor);
+    delete this;
 }
 
 void Client::kickAll(){

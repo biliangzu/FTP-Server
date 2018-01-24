@@ -6,7 +6,7 @@ Task::Task()
 }
 
 void Task::run(){
-    if(command == "c"){
+    if(command == "MKDIR"){
         qDebug() << "Werkt, task";
     }
 }

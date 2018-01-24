@@ -25,7 +25,7 @@ private slots:
     void deleteUserMenu(const QPoint &);
     void appendLog(QString);
     void appendTable(QString, QString);
-
+    void removeFromTable(int);
     void on_actionClear_current_log_triggered();
 
 signals:

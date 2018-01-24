@@ -6,6 +6,7 @@
 #include <QThreadPool>
 #include <QTimer>
 #include <vector>
+#include <memory>
 
 #include "client.h"
 
@@ -22,11 +23,13 @@ signals:
     void sendToTable(QString, QString);
     void deleteUser(int);
     void kickAll();
+    void removeFromTableSignal(int);
 
 public slots:
     void message(QString);
     void getInfo(QString, QString);
     void deleteUserServer(int);
+    void removeFromTable(int);
 
 protected:
     void incomingConnection(qintptr socketDescriptor);

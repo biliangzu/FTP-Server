@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(server, SIGNAL(sendToLog(QString)), this, SLOT(appendLog(QString)));
     connect(server, SIGNAL(sendToTable(QString, QString)), this, SLOT(appendTable(QString, QString)));
+    connect(server, SIGNAL(removeFromTableSignal(int)), this, SLOT(removeFromTable(int)));
     connect(this, SIGNAL(deleteUser(int)), server, SLOT(deleteUserServer(int)));
 
     connect(ui->connectedUsersTable, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(deleteUserMenu(const QPoint &)));
@@ -37,7 +38,6 @@ void MainWindow::on_actionOpen_connection_triggered()
     ui->log->appendPlainText("Starting server!");
 
     server->startServer();
-
 }
 
 void MainWindow::on_actionClose_connection_triggered()
@@ -71,6 +71,14 @@ void MainWindow::deleteUserMenu(const QPoint &click){
         int selectedId = ui->connectedUsersTable->item(selectedRow, 0)->text().toInt();
         emit deleteUser(selectedId);
         ui->connectedUsersTable->removeRow(selectedRow);
+    }
+}
+
+void MainWindow::removeFromTable(int id){
+    for(int i = 0; i < ui->connectedUsersTable->rowCount(); i++){
+        if(ui->connectedUsersTable->item(i, 0)->text().toInt() == id){
+            ui->connectedUsersTable->removeRow(i);
+        }
     }
 }
 

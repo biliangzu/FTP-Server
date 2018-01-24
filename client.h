@@ -15,6 +15,7 @@ class Client : public QObject
 
 signals:
     void message(QString);
+    void removeFromTable(int);
     void info(QString, QString);
 
 public:
