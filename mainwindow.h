@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QTcpSocket>
+#include <QDateTime>
 
 #include "server.h"
 
@@ -34,6 +35,7 @@ signals:
 private:
     Ui::MainWindow *ui;
     Server *server;
+    QString log(QString message);
 
 };
 

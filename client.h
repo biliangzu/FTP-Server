@@ -7,6 +7,10 @@
 #include<QDebug>
 #include<QHostAddress>
 
+#include <QFileInfo>
+#include <QDir>
+#include <QDateTime>
+
 #include "task.h"
 
 class Client : public QObject
@@ -32,8 +36,11 @@ public slots:
  //   void result();
 
 private:
+    void doList(QString & dir);
     QTcpSocket *socket;
     int descriptor;
+    QString generateList(const QFileInfo &entry) const;
+    void sendData(const QByteArray &bytes);
 };
 
 #endif // CLIENT_H

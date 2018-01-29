@@ -8,6 +8,8 @@ Task::Task()
 void Task::run(){
     if(command == "MKDIR"){
         qDebug() << "Werkt, task";
+    } else if (command=="LIST"){
+        qDebug() << "List";
     }
 }
 
