@@ -12,34 +12,83 @@ void Client::setSocket(qintptr descriptor){
     connect(socket, SIGNAL(connected()), this, SLOT(connected()));
     connect(socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
     connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
+    connect(socket, SIGNAL(disconnected()), socket, SLOT(deleteLater()));
 
     socket->setSocketDescriptor(descriptor);
 
     emit message( "Client connected at " + QString::number(descriptor));
-    emit info(QString::number(descriptor), socket->peerAddress().toString());
+    sendData("220 Welcome to Jussie's FTP server!\r\n");
+    socket->flush();
 }
 
 void Client::readyRead(){
-    emit message( "Client readyRead");
+    QString c = socket->readLine();
 
-    QString c = socket->readAll();
-
-    if(c == "LIST"){
-        qDebug() << "Werkt";
-        QString dir = QDir::homePath();
-        doList(dir);
+    if (c.startsWith("LOGIN")){
+        doLogin(c);
+    } else if(c.startsWith("LIST")){
+        doList(c);
+        emit clientMessage(this->username, c);
     }
 
 //    Task *task = new Task();
 //    task->setCommand(c);
 
 //    QThreadPool::globalInstance()->start(task);
-
 }
 
-void Client::doList(QString & dir){
+void Client::doLogin(QString creds){
+    QMap<QString, QString> users = getUsers();
+
+    QString name = creds.split(" ").at(1);
+    QString password = creds.split(" ").at(2);
+
+    name = name.trimmed();
+    password = password.trimmed();
+
+    qDebug() << name << password;
+
+    if(!users.contains(name)){
+        sendData("430 Invalid username or password\r\n");
+        socket->disconnectFromHost();
+    } else if(users[name] != password){
+        sendData("430 Invalid username or password\r\n");
+        socket->disconnectFromHost();
+    } else {
+        sendData("230 Login OK!\r\n");
+        this->username = name;
+        emit clientMessage(username, "LOGGED IN");
+        emit info(QString::number(descriptor), socket->peerAddress().toString(), username);
+        authorized = true;
+    }
+}
+
+QMap<QString, QString> Client::getUsers(){
+    QFile file("users.us");
+    QMap <QString, QString> users;
+
+    if(file.exists()){
+        if(!file.open(QIODevice::ReadOnly)){
+            qDebug() << "Error";
+        } else {
+            QDataStream in(&file);
+            users.clear();
+            in.setVersion(QDataStream::Qt_5_9);
+            in >> users;
+            file.close();
+        }
+    }
+
+    return users;
+}
+
+void Client::doList(QString & path){
+
+    QString dir = (path.trimmed().split(" ").at(1) != NULL) ? dir : settings.value("rootPath").toString(); // fout
+    qDebug() << dir;
+
     QFileInfo info;
-    info.setFile(dir);
+    info.setFile(path);
 
     if(info.isDir()){
         QFileInfoList entryList = info.dir().entryInfoList();
@@ -49,15 +98,16 @@ void Client::doList(QString & dir){
             if(entry.isHidden()) qDebug() << "Hidden";
             outlines.append(generateList(entry));
         }
-        qDebug() << outlines;
-        socket->write(outlines.join(QString()).toLocal8Bit());
+
+        sendData(outlines.join(QString()).toLocal8Bit());
     } else {
         qDebug() << "Else" <<  generateList(info);
     }
 }
 
 void Client::sendData(const QByteArray &bytes){
-
+    //Todo Datasocket
+    socket->write(bytes);
 }
 
 QString Client::generateList(const QFileInfo &entry) const {

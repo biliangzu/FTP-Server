@@ -7,6 +7,7 @@
 #include <QTimer>
 #include <vector>
 #include <memory>
+#include <QSettings>
 
 #include "client.h"
 
@@ -19,15 +20,17 @@ public:
     void stopServer();
 
 signals:
-    void sendToLog(QString);
-    void sendToTable(QString, QString);
+    void sendToLogServer(QString);
+    void sendToLogClient(QString username, QString message);
+    void sendToTable(QString, QString, QString);
     void deleteUser(int);
     void kickAll();
     void removeFromTableSignal(int);
 
 public slots:
     void message(QString);
-    void getInfo(QString, QString);
+    void clientMessage(QString, QString);
+    void getInfo(QString, QString, QString);
     void deleteUserServer(int);
     void removeFromTable(int);
 

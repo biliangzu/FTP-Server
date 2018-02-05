@@ -28,16 +28,25 @@ SOURCES += \
         mainwindow.cpp \
     server.cpp \
     client.cpp \
-    task.cpp
+    task.cpp \
+    adduser.cpp \
+    usersoverview.cpp \
+    settings.cpp
 
 HEADERS += \
         mainwindow.h \
     server.h \
     client.h \
-    task.h
+    task.h \
+    adduser.h \
+    usersoverview.h \
+    settings.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    adduser.ui \
+    usersoverview.ui \
+    settings.ui
 
 RESOURCES += \
     icons.qrc

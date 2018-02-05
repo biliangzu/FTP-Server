@@ -8,5 +8,9 @@ int main(int argc, char *argv[])
     w.setWindowIcon(QIcon(":/icons/icons/servericon.png"));
     w.show();
 
+    QCoreApplication::setOrganizationName("Moor");
+    QCoreApplication::setOrganizationDomain("jmoor.com");
+    QCoreApplication::setApplicationName("JussiesFTPServer");
+
     return a.exec();
 }
