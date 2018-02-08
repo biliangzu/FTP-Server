@@ -98,8 +98,6 @@ void MainWindow::on_actionClear_current_log_triggered()
     ui->log->clear();
 }
 
-
-
 QString MainWindow::log(QString message){
     QDateTime current = QDateTime::currentDateTime();
     return current.toString() + " - [SERVER] > " + message;

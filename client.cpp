@@ -15,9 +15,10 @@ void Client::setSocket(qintptr descriptor){
     connect(socket, SIGNAL(disconnected()), socket, SLOT(deleteLater()));
 
     socket->setSocketDescriptor(descriptor);
+    currentDir = settings.value("rootPath").toString();
 
     emit message( "Client connected at " + QString::number(descriptor));
-    sendData("220 Welcome to Jussie's FTP server!\r\n");
+    sendData(settings.value("welcomeMessage").toString().toLocal8Bit());
     socket->flush();
 }
 
@@ -29,12 +30,21 @@ void Client::readyRead(){
     } else if(c.startsWith("LIST")){
         doList(c);
         emit clientMessage(this->username, c);
+    } else if(c.startsWith("STOR")){
+        doStor(c);
+        emit clientMessage(this->username, c);
     }
 
 //    Task *task = new Task();
 //    task->setCommand(c);
 
 //    QThreadPool::globalInstance()->start(task);
+}
+
+void Client::doStor(QString fileName){
+    fileName = currentDir + "/" + fileName.split(" ").at(1);
+    qDebug() << "Do stor" << fileName;
+    fileSocket->receiveFile(fileName);
 }
 
 void Client::doLogin(QString creds){
@@ -55,7 +65,8 @@ void Client::doLogin(QString creds){
         sendData("430 Invalid username or password\r\n");
         socket->disconnectFromHost();
     } else {
-        sendData("230 Login OK!\r\n");
+        openFileSocket();
+        sendData(("230 Login OK! " + QString::number(filePort) + "\r\n").toLocal8Bit());
         this->username = name;
         emit clientMessage(username, "LOGGED IN");
         emit info(QString::number(descriptor), socket->peerAddress().toString(), username);
@@ -84,11 +95,19 @@ QMap<QString, QString> Client::getUsers(){
 
 void Client::doList(QString & path){
 
-    QString dir = (path.trimmed().split(" ").at(1) != NULL) ? dir : settings.value("rootPath").toString(); // fout
-    qDebug() << dir;
+    QDir dir(currentDir);
+    qDebug() << "Command: " << path;
+    QString dirPath = (path.trimmed().split(" ").at(1) != "/") ? currentDir+"/"+path.trimmed().split(" ").at(1) : settings.value("rootPath").toString();
+    if(!dir.cd(dirPath)){
+        qDebug()<< "Mislukt!" << dirPath;
+    }
+
+    currentDir = dir.absolutePath();
+    qDebug() << "Abs path: " + dir.absolutePath();
+    qDebug() << "Current dir: " + currentDir;
 
     QFileInfo info;
-    info.setFile(path);
+    info.setFile(currentDir);
 
     if(info.isDir()){
         QFileInfoList entryList = info.dir().entryInfoList();
@@ -101,7 +120,8 @@ void Client::doList(QString & path){
 
         sendData(outlines.join(QString()).toLocal8Bit());
     } else {
-        qDebug() << "Else" <<  generateList(info);
+        qDebug() << "1file";
+        sendData(generateList(info).toLocal8Bit());
     }
 }
 
@@ -144,6 +164,16 @@ void Client::kickClient(int descriptor){
     if(this->descriptor == descriptor){
         socket->disconnectFromHost();
     }
+}
+
+void Client::openFileSocket(){
+    fileSocket = new FileSocket();
+
+    fileSocket->listenFor();
+    filePort = fileSocket->serverPort();
+
+    qDebug() << fileAddress;
+    qDebug() << filePort;
 }
 
 

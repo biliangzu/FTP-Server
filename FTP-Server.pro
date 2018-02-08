@@ -31,7 +31,8 @@ SOURCES += \
     task.cpp \
     adduser.cpp \
     usersoverview.cpp \
-    settings.cpp
+    settings.cpp \
+    filesocket.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -40,7 +41,8 @@ HEADERS += \
     task.h \
     adduser.h \
     usersoverview.h \
-    settings.h
+    settings.h \
+    filesocket.h
 
 FORMS += \
         mainwindow.ui \
