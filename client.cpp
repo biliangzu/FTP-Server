@@ -18,7 +18,7 @@ void Client::setSocket(qintptr descriptor){
     currentDir = settings.value("rootPath").toString();
 
     emit message( "Client connected at " + QString::number(descriptor));
-    sendData(settings.value("welcomeMessage").toString().toLocal8Bit());
+    sendResponse(settings.value("welcomeMessage").toString().toLocal8Bit());
     socket->flush();
 }
 
@@ -28,10 +28,11 @@ void Client::readyRead(){
     if (c.startsWith("LOGIN")){
         doLogin(c);
     } else if(c.startsWith("LIST")){
+        sendResponse("333");
         doList(c);
         emit clientMessage(this->username, c);
-    } else if(c.startsWith("STOR")){
-        doStor(c);
+    } else if(c.startsWith("PUT")){
+        doPut(c);
         emit clientMessage(this->username, c);
     }
 
@@ -41,9 +42,9 @@ void Client::readyRead(){
 //    QThreadPool::globalInstance()->start(task);
 }
 
-void Client::doStor(QString fileName){
-    fileName = currentDir + "/" + fileName.split(" ").at(1);
-    qDebug() << "Do stor" << fileName;
+void Client::doPut(QString fileName){
+    fileName = currentDir + "/" + fileName.trimmed().split(" ").at(1);
+    qDebug() << "Do put" << fileName;
     fileSocket->receiveFile(fileName);
 }
 
@@ -59,14 +60,14 @@ void Client::doLogin(QString creds){
     qDebug() << name << password;
 
     if(!users.contains(name)){
-        sendData("430 Invalid username or password\r\n");
+        sendResponse("430 Invalid username or password");
         socket->disconnectFromHost();
     } else if(users[name] != password){
-        sendData("430 Invalid username or password\r\n");
+        sendResponse("430 Invalid username or password");
         socket->disconnectFromHost();
     } else {
         openFileSocket();
-        sendData(("230 Login OK! " + QString::number(filePort) + "\r\n").toLocal8Bit());
+        sendResponse(("230 Login OK! " + QString::number(filePort)).toLocal8Bit());
         this->username = name;
         emit clientMessage(username, "LOGGED IN");
         emit info(QString::number(descriptor), socket->peerAddress().toString(), username);
@@ -101,16 +102,13 @@ void Client::doList(QString & path){
     if(!dir.cd(dirPath)){
         qDebug()<< "Mislukt!" << dirPath;
     }
-
     currentDir = dir.absolutePath();
-    qDebug() << "Abs path: " + dir.absolutePath();
-    qDebug() << "Current dir: " + currentDir;
 
-    QFileInfo info;
-    info.setFile(currentDir);
+    // TODO: FIX DIRECTORY NAME WITH MORE THAN 1 STRING
+    QFileInfo info(currentDir);
 
     if(info.isDir()){
-        QFileInfoList entryList = info.dir().entryInfoList();
+        QFileInfoList entryList = dir.entryInfoList();
         QStringList outlines;
 
         foreach(QFileInfo entry, entryList){
@@ -118,16 +116,15 @@ void Client::doList(QString & path){
             outlines.append(generateList(entry));
         }
 
-        sendData(outlines.join(QString()).toLocal8Bit());
+        fileSocket->sendList(outlines.join(QString()).toLocal8Bit());
     } else {
         qDebug() << "1file";
-        sendData(generateList(info).toLocal8Bit());
+        fileSocket->sendList(generateList(info).toLocal8Bit());
     }
 }
 
-void Client::sendData(const QByteArray &bytes){
-    //Todo Datasocket
-    socket->write(bytes);
+void Client::sendResponse(const QByteArray &bytes){
+    socket->write(bytes +"\r\n");
 }
 
 QString Client::generateList(const QFileInfo &entry) const {
@@ -172,8 +169,7 @@ void Client::openFileSocket(){
     fileSocket->listenFor();
     filePort = fileSocket->serverPort();
 
-    qDebug() << fileAddress;
-    qDebug() << filePort;
+   // sendResponse("225 Data connection open");
 }
 
 

@@ -23,11 +23,13 @@ public:
     void listenFor();
     void sendFile(QString fileName);
     void receiveFile(QString fileName);
+    void sendList(const QByteArray &bytes);
 
 private:
     QTcpSocket *socket;
     QString fileName;
     void incomingConnection(int socketDescriptor);
+    bool fileNameSet = false;
 };
 
 #endif // FILESOCKET_H

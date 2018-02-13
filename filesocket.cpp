@@ -24,6 +24,10 @@ void FileSocket::incomingConnection(int socketDescriptor){
     this->close();
 }
 
+void FileSocket::sendList(const QByteArray &bytes){
+    socket->write(bytes);
+}
+
 void FileSocket::sendFile(QString fileName){
     QFile file(fileName);
     QByteArray buffer;
@@ -40,22 +44,31 @@ void FileSocket::sendFile(QString fileName){
 }
 
 void FileSocket::receiveFile(QString fileName){
+    qDebug() << fileNameSet;
     this->fileName = fileName;
+    fileNameSet = true;
 }
 
 void FileSocket::readyRead(){
-    QFile file(fileName);
+    qDebug() << "ready";
+    if(fileNameSet){
+        QFile file(fileName);
 
-    if(!file.open(QIODevice::WriteOnly)){
-        qDebug() << "Error opening file";
-    } else {
-        qDebug() << "File opened";
+        if(!file.open(QIODevice::WriteOnly | QIODevice::Append)){
+            qDebug() << file.errorString();
+            return;
+        } else {
+            qDebug() << "File opened";
+        }
+
+        QByteArray buffer = socket->readAll();
+
+        file.write(buffer);
+        file.close();
+
+        if(!socket->isReadable()){
+            fileNameSet = false;
+        }
     }
-
-    QByteArray buffer = socket->readAll();
-
-    file.write(buffer);
-
-    file.close();
 }
 

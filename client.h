@@ -14,6 +14,7 @@
 #include <QDataStream>
 #include <QSettings>
 #include <filesocket.h>
+#include <QDirIterator>
 
 #include "task.h"
 
@@ -43,13 +44,13 @@ public slots:
 private:
     void doList(QString & path);
     void doLogin(QString creds);
-    void doStor(QString fileName);
+    void doPut(QString fileName);
     void openFileSocket();
     QMap<QString, QString> getUsers();
     QTcpSocket *socket;
     int descriptor;
     QString generateList(const QFileInfo &entry) const;
-    void sendData(const QByteArray &bytes);
+    void sendResponse(const QByteArray &bytes);
     QString currentDir;
     bool authorized = false;
     QString username;

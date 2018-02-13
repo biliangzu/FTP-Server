@@ -39,7 +39,7 @@ void MainWindow::on_actionOpen_connection_triggered()
 {
     ui->actionOpen_connection->setEnabled(false);
     ui->actionClose_connection->setEnabled(true);
-    ui->log->appendPlainText(log("Starting server!"));
+    appendLogServer("Starting server!");
 
     server->startServer();
 }
@@ -49,7 +49,7 @@ void MainWindow::on_actionClose_connection_triggered()
     ui->actionClose_connection->setEnabled(false);
     ui->actionOpen_connection->setEnabled(true);
 
-    ui->log->appendPlainText(log("Shutting down..."));
+    appendLogServer("Shutting down...");
 
     server->stopServer();
     ui->connectedUsersTable->setRowCount(0);
@@ -62,7 +62,7 @@ void MainWindow::appendLogServer(QString msg){
 
 void MainWindow::appendLogClient(QString username, QString message){
     QDateTime current = QDateTime::currentDateTime();
-    ui->log->appendPlainText(current.toString() + " - ["+username+"] > " + message);
+    ui->log->appendPlainText(current.toString() + " - ["+username+"] > " + message.trimmed());
 }
 
 void MainWindow::appendTable(QString id, QString ip, QString username){
@@ -96,11 +96,6 @@ void MainWindow::removeFromTable(int id){
 void MainWindow::on_actionClear_current_log_triggered()
 {
     ui->log->clear();
-}
-
-QString MainWindow::log(QString message){
-    QDateTime current = QDateTime::currentDateTime();
-    return current.toString() + " - [SERVER] > " + message;
 }
 
 void MainWindow::on_actionAdd_user_triggered()
