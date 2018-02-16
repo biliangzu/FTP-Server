@@ -21,9 +21,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(server, SIGNAL(sendToTable(QString, QString, QString)), this, SLOT(appendTable(QString, QString, QString)));
     connect(server, SIGNAL(removeFromTableSignal(int)), this, SLOT(removeFromTable(int)));
     connect(this, SIGNAL(deleteUser(int)), server, SLOT(deleteUserServer(int)));
-    connect(ui->connectedUsersTable, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(deleteUserMenu(const QPoint &)));
     connect(this, SIGNAL(deleteUser(int)), server, SLOT(deleteUserServer(int)));
     connect(this, SIGNAL(getUsers()), overview, SLOT(getUsers()));
+    connect(ui->connectedUsersTable, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(deleteUserMenu(const QPoint &)));
 
     ui->actionClose_connection->setEnabled(false);
     ui->connectedUsersTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);

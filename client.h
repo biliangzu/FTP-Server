@@ -43,8 +43,9 @@ public slots:
 
 private:
     void doList(QString & path);
-    void doLogin(QString creds);
-    void doPut(QString fileName);
+    void doLogin(QString &creds);
+    void doPut(QString &fileName);
+    void doMkDir(QString &dirName);
     void openFileSocket();
     QMap<QString, QString> getUsers();
     QTcpSocket *socket;

@@ -101,7 +101,7 @@ void Client::doMkDir(QString &dirName){
     if(!dir.mkdir(dirName)){
         sendResponse("Couldn't create directory...");
     }else {
-        sendResponse("Directory created!");
+        sendResponse("257 Directory created!");
     }
 }
 

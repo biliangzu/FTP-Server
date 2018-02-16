@@ -50,7 +50,6 @@ void FileSocket::receiveFile(QString fileName){
 }
 
 void FileSocket::readyRead(){
-    qDebug() << "ready";
     if(fileNameSet){
         QFile file(fileName);
 

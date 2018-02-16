@@ -31,10 +31,8 @@ private slots:
     void appendTable(QString, QString, QString);
     void removeFromTable(int);
     void on_actionClear_current_log_triggered();
-
     void on_actionAdd_user_triggered();
     void on_actionUser_list_triggered();
-
     void on_actionConfigure_server_triggered();
 
 signals:
