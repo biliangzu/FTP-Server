@@ -42,6 +42,8 @@ void addUser::load(){
         in >> users;
     }
 
+    file.flush();
+    file.close();
 
 }
 

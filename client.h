@@ -45,18 +45,22 @@ private:
     void doList(QString & path);
     void doLogin(QString &creds);
     void doPut(QString &fileName);
+    void doGet(QString &fileName);
     void doMkDir(QString &dirName);
     void openFileSocket();
+    void login(QString& username);
+    void sendResponse(const QByteArray &bytes);
+    QString generateList(const QFileInfo &entry) const;
     QMap<QString, QString> getUsers();
+
+private:
     QTcpSocket *socket;
     int descriptor;
-    QString generateList(const QFileInfo &entry) const;
-    void sendResponse(const QByteArray &bytes);
     QString currentDir;
     bool authorized = false;
     QString username;
     QSettings settings;
-    FileSocket *fileSocket;
+    FileSocket fileSocket;
     QString fileAddress;
     quint16 filePort;
 };

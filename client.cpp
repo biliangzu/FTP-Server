@@ -28,14 +28,17 @@ void Client::readyRead(){
     if (c.startsWith("LOGIN")){
         doLogin(c);
     } else if(c.startsWith("LIST")){
+        emit clientMessage(this->username, c);
         doList(c);
-        emit clientMessage(this->username, c);
     } else if(c.startsWith("PUT")){
+        emit clientMessage(this->username, c);
         doPut(c);
-        emit clientMessage(this->username, c);
     } else if(c.startsWith("MKD")){
-        doMkDir(c);
         emit clientMessage(this->username, c);
+        doMkDir(c);
+    } else if(c.startsWith("GET")){
+        emit clientMessage(this->username, c);
+        doGet(c);
     }
 
 //    Task *task = new Task();
@@ -47,32 +50,56 @@ void Client::readyRead(){
 void Client::doPut(QString &fileName){
     fileName = currentDir + "/" + fileName.trimmed().split('"').at(1);
     qDebug() << "Do put" << fileName;
-    fileSocket->receiveFile(fileName);
+    fileSocket.receiveFile(fileName);
 }
 
+void Client::doGet(QString &fileName){
+    fileName = currentDir + "/" + fileName.split('"').at(1);
+    fileSocket.sendFile(fileName);
+    sendResponse("250 File sent");
+}
+
+//TODO HIER FIXEN
 void Client::doLogin(QString &creds){
     QMap<QString, QString> users = getUsers();
-
-    QString name = creds.split(" ").at(1);
-    QString password = creds.split(" ").at(2);
+    creds = creds.trimmed();
+    QString name = creds.split(' ').at(1);
+    QString password = creds.split(' ').at(2);
 
     name = name.trimmed();
     password = password.trimmed();
 
-    if(!users.contains(name)){
-        sendResponse("430 Invalid username or password");
-        socket->disconnectFromHost();
-    } else if(users[name] != password){
-        sendResponse("430 Invalid username or password");
-        socket->disconnectFromHost();
+    qDebug() << creds;
+    qDebug() << name << " " << password;
+    qDebug() << users;
+
+    QSettings settings;
+
+    if(!settings.value("allowAnonUsers").toBool()){
+        if(!users.contains(name)){
+            sendResponse("430 Invalid username or password");
+            socket->disconnectFromHost();
+            return;
+        } else if(users[name] != password){
+            sendResponse("430 Invalid username or password");
+            qDebug() << "hier";
+            socket->disconnectFromHost();
+            return;
+       } else {
+            login(name);
+        }
     } else {
-        openFileSocket();
-        sendResponse(("230 Login OK! " + QString::number(filePort)).toLocal8Bit());
-        this->username = name;
-        emit clientMessage(username, "LOGGED IN");
-        emit info(QString::number(descriptor), socket->peerAddress().toString(), username);
-        authorized = true;
+        login(name);
     }
+}
+
+void Client::login(QString& username){
+    openFileSocket();
+    sendResponse(("230 Login OK! " + QString::number(filePort)).toLocal8Bit());
+    this->username = username;
+    emit clientMessage(this->username, "LOGGED IN");
+    emit info(QString::number(descriptor), socket->peerAddress().toString(), this->username);
+    authorized = true;
 }
 
 QMap<QString, QString> Client::getUsers(){
@@ -87,10 +114,11 @@ QMap<QString, QString> Client::getUsers(){
             users.clear();
             in.setVersion(QDataStream::Qt_5_9);
             in >> users;
-            file.close();
         }
     }
 
+    file.flush();
+    file.close();
     return users;
 }
 
@@ -101,7 +129,7 @@ void Client::doMkDir(QString &dirName){
     if(!dir.mkdir(dirName)){
         sendResponse("Couldn't create directory...");
     }else {
-        sendResponse("Directory created!");
+        sendResponse("257 Directory created!");
     }
 }
 
@@ -128,10 +156,10 @@ void Client::doList(QString & path){
             outlines.append(generateList(entry));
         }
 
-        fileSocket->sendList(outlines.join(QString()).toLocal8Bit());
+        fileSocket.sendList(outlines.join(QString()).toLocal8Bit());
     } else {
         qDebug() << "1file";
-        fileSocket->sendList(generateList(info).toLocal8Bit());
+        fileSocket.sendList(generateList(info).toLocal8Bit());
     }
 }
 
@@ -146,12 +174,14 @@ QString Client::generateList(const QFileInfo &entry) const {
         line += QLatin1String("       <DIR>         ");
     } else {
         line += QString("%1").arg(entry.size(), 20);
+   //     qDebug() << entry.fileName() << " " << QString::number(entry.size());
     }
 
     line += QLatin1Char(' ');
     line += entry.fileName();
 
     line += QLatin1String("\r\n");
+    qDebug () << line;
     return line;
 }
 
@@ -162,6 +192,7 @@ void Client::connected(){
 void Client::disconnected(){
     emit message("Client " + QString::number(this->descriptor) +" disconnected");
     emit removeFromTable(this->descriptor);
+
     delete this;
 }
 
@@ -176,12 +207,8 @@ void Client::kickClient(int descriptor){
 }
 
 void Client::openFileSocket(){
-    fileSocket = new FileSocket();
-
-    fileSocket->listenFor();
-    filePort = fileSocket->serverPort();
-
-   // sendResponse("225 Data connection open");
+    fileSocket.listenFor();
+    filePort = fileSocket.serverPort();
 }
 
 

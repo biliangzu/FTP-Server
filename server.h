@@ -37,7 +37,7 @@ public slots:
 protected:
     void incomingConnection(qintptr socketDescriptor);
 private:
-    std::vector <Client*> clients;
+    int connectedClients = 0;
 
 };
 

@@ -28,6 +28,11 @@ void Server::stopServer(){
 }
 
 void Server::incomingConnection(qintptr socketDescriptor){
+      QSettings settings;
+
+      qDebug() << settings.value("maxUsers");
+
+      // TODO FIXEN!
 
       Client *client = new Client(this);
 
@@ -40,6 +45,12 @@ void Server::incomingConnection(qintptr socketDescriptor){
       connect(this, SIGNAL(kickAll()), client, SLOT(kickAll()));
 
       client->setSocket(socketDescriptor);
+      connectedClients += 1;
+
+      if(connectedClients >= settings.value("maxUsers").toInt()){
+          message("Server full, closing...");
+          this->close();
+      }
 }
 
 void Server::message(QString msg){
@@ -60,4 +71,14 @@ void Server::deleteUserServer(int id){
 
 void Server::removeFromTable(int id){
     emit removeFromTableSignal(id);
+    connectedClients -= 1;
+
+    QSettings settings;
+    if(connectedClients < settings.value("maxUsers").toInt()){
+        quint16 port;
+        port = (settings.value("serverPort").isNull() ? 1234 : settings.value("serverPort").toInt());
+        this->listen(QHostAddress::Any, port);
+        message("More room, opening again...");
+    }
+
 }
